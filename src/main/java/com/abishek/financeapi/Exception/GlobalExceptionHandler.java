@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -38,6 +40,18 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
     
+    @ExceptionHandler(DuplicateCategoryException.class)
+    public ResponseEntity<Object> handleDuplicateCategoryException(DuplicateCategoryException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("error", "Duplicate Category");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).substring(4));
+
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+    
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<Object> handleCustomException(CustomException ex, WebRequest request) {
         Map<String, Object> body = new HashMap<>();
@@ -49,6 +63,69 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
 //        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+    
+    
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Object> handleEntityNotFounException(EntityNotFoundException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
+        body.put("error", "Internal Server Error");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).substring(4));
+
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+    
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<Object> handleCategoryNotFoundException(CategoryNotFoundException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Category Not Found");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).substring(4));  // Extract URI from the request
+
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+    
+    @ExceptionHandler(IncomeNotFoundException.class)
+    public ResponseEntity<Object> handleIncomeNotFoundException(IncomeNotFoundException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Income Not Found");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).substring(4));  // Extract URI from the request
+
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+    
+    
+    @ExceptionHandler(ExpenseNotFoundException.class)
+    public ResponseEntity<Object> handleExpenseNotFoundException(ExpenseNotFoundException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Expense Not Found");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).substring(4));  // Extract URI from the request
+
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+    
+    @ExceptionHandler(TransactionNotFoundException.class)
+    public ResponseEntity<Object> handleTransactionNotFoundException(TransactionNotFoundException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Expense Not Found");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).substring(4));  // Extract URI from the request
+
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
     // Handle all other exceptions
