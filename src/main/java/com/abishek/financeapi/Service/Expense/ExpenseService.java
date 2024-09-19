@@ -3,7 +3,6 @@ package com.abishek.financeapi.Service.Expense;
 import java.util.List;
 
 import com.abishek.financeapi.DTO.ExpenseDTO;
-import com.abishek.financeapi.Model.Expense;
 
 public interface ExpenseService {
 

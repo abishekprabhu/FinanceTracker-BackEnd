@@ -8,11 +8,13 @@ import java.util.OptionalDouble;
 import org.springframework.stereotype.Service;
 
 import com.abishek.financeapi.DTO.GraphDTO;
+import com.abishek.financeapi.DTO.PdfDTO;
 import com.abishek.financeapi.DTO.StatsDTO;
 import com.abishek.financeapi.Model.Expense;
 import com.abishek.financeapi.Model.Income;
 import com.abishek.financeapi.Repository.ExpenseRepository;
 import com.abishek.financeapi.Repository.IncomeRepository;
+import com.abishek.financeapi.Repository.TransactionRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,16 +26,69 @@ public class StatsServiceImpl implements StatsService {
 	
 	private final ExpenseRepository expenseRepository;
 	
-	public GraphDTO getChartData() {
+	private final TransactionRepository transactionRepository;
+	
+	@Override
+	public GraphDTO getChartDataMonthly() {
 		LocalDate endDate = LocalDate.now();
 		
-		LocalDate startDate = endDate.minusDays(27);
+		LocalDate startDate = endDate.minusDays(30);
 		
 		GraphDTO graphDTO = new GraphDTO();
-		graphDTO.setExpenseList(expenseRepository.findByDateBetween(startDate, endDate));
-		graphDTO.setIncomeList(incomeRepository.findByDateBetween(startDate, endDate));
+		graphDTO.setExpenseList(expenseRepository.findByDateBetweenOrderByDateAsc(startDate, endDate));
+		graphDTO.setIncomeList(incomeRepository.findByDateBetweenOrderByDateAsc(startDate, endDate));
 		
 		return graphDTO;
+	}
+	
+	@Override
+	public GraphDTO getChartDataWeekly() {
+		LocalDate endDate = LocalDate.now();
+		
+		LocalDate startDate = endDate.minusDays(7);
+		
+		GraphDTO graphDTO = new GraphDTO();
+		graphDTO.setExpenseList(expenseRepository.findByDateBetweenOrderByDateAsc(startDate, endDate));
+		graphDTO.setIncomeList(incomeRepository.findByDateBetweenOrderByDateAsc(startDate, endDate));
+		
+		return graphDTO;
+	}
+	
+	@Override
+	public GraphDTO getChartDataQuartarly() {
+		LocalDate endDate = LocalDate.now();
+		
+		LocalDate startDate = endDate.minusDays(183);
+		
+		GraphDTO graphDTO = new GraphDTO();
+		graphDTO.setExpenseList(expenseRepository.findByDateBetweenOrderByDateAsc(startDate, endDate));
+		graphDTO.setIncomeList(incomeRepository.findByDateBetweenOrderByDateAsc(startDate, endDate));
+		
+		return graphDTO;
+	}
+	
+	@Override
+	public GraphDTO getChartDataYearly() {
+		LocalDate endDate = LocalDate.now();
+		
+		LocalDate startDate = endDate.minusDays(365);
+		
+		GraphDTO graphDTO = new GraphDTO();
+		graphDTO.setExpenseList(expenseRepository.findByDateBetweenOrderByDateAsc(startDate, endDate));
+		graphDTO.setIncomeList(incomeRepository.findByDateBetweenOrderByDateAsc(startDate, endDate));
+		
+		return graphDTO;
+	}
+	
+	@Override
+	public PdfDTO getTransactionDataMonthly() {
+		LocalDate endDate = LocalDate.now();
+		
+		LocalDate startDate = endDate.minusDays(30);
+		
+		PdfDTO pdfDTO = new PdfDTO();
+		pdfDTO.setTransactionList(transactionRepository.findByDateBetweenOrderByDateDesc(startDate, endDate));		
+		return pdfDTO;
 	}
 	
 	public StatsDTO getStats() {

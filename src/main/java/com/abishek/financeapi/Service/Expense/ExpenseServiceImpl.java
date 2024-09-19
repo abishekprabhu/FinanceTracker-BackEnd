@@ -1,6 +1,6 @@
 package com.abishek.financeapi.Service.Expense;
 
-import java.time.LocalDate;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -84,7 +84,7 @@ public class ExpenseServiceImpl implements ExpenseService{
     public ExpenseDTO updateExpense(Long id, ExpenseDTO expenseDTO) {
         // Fetch the expense to be updated
         Expense expense = expenseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Expense not found"));
+                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found"));
 
         // Update expense details
         expense.setDescription(expenseDTO.getDescription());
@@ -93,9 +93,9 @@ public class ExpenseServiceImpl implements ExpenseService{
 
         // Fetch the user and category
         User user = userRepository.findById(expenseDTO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         Category category = categoryRepository.findById(expenseDTO.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
 
         // Update the expense with user and category details
         expense.setUser(user);
@@ -145,7 +145,7 @@ public class ExpenseServiceImpl implements ExpenseService{
     @Override
     public ExpenseDTO getExpenseById(Long id) {
         Expense expense = expenseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Expense not found"));
+                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found"));
         return mapToDTO(expense);
     }
 	
@@ -207,8 +207,13 @@ public class ExpenseServiceImpl implements ExpenseService{
     @Override
     public List<ExpenseDTO> getAllExpenseByUserId(Long userId) {
         List<Expense> expenses = expenseRepository.findByUserId(userId);
-        return expenses.stream().map(this::mapToDTO).collect(Collectors.toList());
+        return expenses.stream()
+        		.sorted(Comparator.comparing(Expense::getDate).reversed())
+        		.map(this::mapToDTO)
+        		.collect(Collectors.toList());
     }
+    
+    
 
     @Override
     public List<ExpenseDTO> getAllExpenseByUserIdAndCategoryId(Long userId, Long categoryId) {

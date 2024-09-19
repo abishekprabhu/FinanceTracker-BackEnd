@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import com.abishek.financeapi.DTO.TransactionDTO;
 import com.abishek.financeapi.Enum.TransactionType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -37,18 +38,22 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
+    @JsonBackReference
     private Category category;
 
     @ManyToOne
     @JoinColumn(name = "income_id")
+    @JsonBackReference
     private Income income;
 
     @ManyToOne
     @JoinColumn(name = "expense_id")
+    @JsonBackReference
     private Expense expense;
 
 }

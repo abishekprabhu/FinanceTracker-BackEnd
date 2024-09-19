@@ -1,5 +1,6 @@
 package com.abishek.financeapi.Service.Transaction;
 
+import java.util.Comparator;
 //import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -106,7 +107,10 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public List<TransactionDTO> getAllTransactions() {
         List<Transaction> transactions = transactionRepository.findAll();
-        return transactions.stream().map(this::mapToDTO).collect(Collectors.toList());
+        return transactions.stream()
+        		.sorted(Comparator.comparing(Transaction::getDate).reversed())
+        		.map(this::mapToDTO)        		
+        		.collect(Collectors.toList());
     }
 
     @Override
@@ -173,7 +177,11 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public List<TransactionDTO> getAllTransactions(Long userId) {
         List<Transaction> transactions = transactionRepository.findByUserId(userId);
-        return transactions.stream().map(this::mapToDTO).collect(Collectors.toList());
+        return transactions
+        		.stream()
+        		.sorted(Comparator.comparing(Transaction::getDate).reversed())
+        		.map(this::mapToDTO)
+        		.collect(Collectors.toList());
     }
 
     @Override
@@ -189,8 +197,13 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     private TransactionDTO mapToDTO(Transaction transaction) {
-        return new TransactionDTO(transaction.getId(), transaction.getDescription(), transaction.getAmount(),
-                transaction.getType(), transaction.getDate(), transaction.getUser().getId(),
+        return new TransactionDTO(
+        		transaction.getId(),
+        		transaction.getDescription(),
+        		transaction.getAmount(),
+                transaction.getType(),
+                transaction.getDate(),
+                transaction.getUser().getId(),
                 transaction.getCategory().getId(), 
                 transaction.getIncome() != null ? transaction.getIncome().getId() : null,
                 transaction.getExpense() != null ? transaction.getExpense().getId() : null);

@@ -45,7 +45,7 @@ public class IncomeController {
 	
 	@GetMapping("/all")
 	public ResponseEntity<List<IncomeDTO>> getAllIncomes(){
-		return ResponseEntity.ok(incomeService.getAllIncome());
+		return ResponseEntity.ok(incomeService.getAllIncomeByDescending());
 	}
 	
 	@GetMapping("/{id}")

@@ -128,6 +128,19 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
+    
+    
+    @ExceptionHandler(BudgetNotFoundException.class)
+    public ResponseEntity<Object> handleBudgetNotFoundException(BudgetNotFoundException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Expense Not Found");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).substring(4));  // Extract URI from the request
+
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
 
     // Handle all other exceptions
     @ExceptionHandler(Exception.class)

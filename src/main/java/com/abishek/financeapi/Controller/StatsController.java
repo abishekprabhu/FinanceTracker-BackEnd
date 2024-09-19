@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.abishek.financeapi.DTO.GraphDTO;
+import com.abishek.financeapi.DTO.PdfDTO;
 import com.abishek.financeapi.Service.Stats.StatsService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,9 +20,29 @@ public class StatsController {
 
 	private final StatsService statsService;
 	
-	@GetMapping("/chart")
-	public ResponseEntity<GraphDTO> getChartDetails(){
-		return ResponseEntity.ok(statsService.getChartData());
+	@GetMapping("/chart/weekly")
+	public ResponseEntity<GraphDTO> getChartWeekly(){
+		return ResponseEntity.ok(statsService.getChartDataWeekly());
+	}
+	@GetMapping("/chart/monthly")
+	public ResponseEntity<GraphDTO> getChartMonthly(){
+		return ResponseEntity.ok(statsService.getChartDataMonthly());
+	}
+	
+	@GetMapping("/chart/quartarly")
+	public ResponseEntity<GraphDTO> getChartQuartarly(){
+		return ResponseEntity.ok(statsService.getChartDataQuartarly());
+	}
+	
+	@GetMapping("/chart/yearly")
+	public ResponseEntity<GraphDTO> getChartYearly(){
+		return ResponseEntity.ok(statsService.getChartDataYearly());
+	}
+	
+	
+	@GetMapping("/pdf/monthly")
+	public ResponseEntity<PdfDTO> getPdfMonthly(){
+		return ResponseEntity.ok(statsService.getTransactionDataMonthly());
 	}
 	
 	@GetMapping

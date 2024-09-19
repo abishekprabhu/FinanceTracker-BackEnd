@@ -201,7 +201,9 @@ public class IncomeServiceImpl implements IncomeService{
     @Override
     public List<IncomeDTO> getAllIncomeByUserId(Long userId) {
         List<Income> incomes = incomeRepository.findByUserId(userId);
-        return incomes.stream().map(this::mapToDTO).collect(Collectors.toList());
+        return incomes.stream()
+        		.sorted(Comparator.comparing(Income::getDate).reversed())
+        		.map(this::mapToDTO).collect(Collectors.toList());
     }
 
     @Override

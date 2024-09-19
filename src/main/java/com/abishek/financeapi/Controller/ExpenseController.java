@@ -47,7 +47,7 @@ public class ExpenseController {
 	
 	@GetMapping("/all")
 	public ResponseEntity<List<ExpenseDTO>> getAllExpenses(){
-		return ResponseEntity.ok(expenseService.getAllExpenses());		
+		return ResponseEntity.ok(expenseService.getAllExpensesByDescending());		
 	}
 	
 	
