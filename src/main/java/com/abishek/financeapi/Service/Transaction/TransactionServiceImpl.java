@@ -1,5 +1,6 @@
 package com.abishek.financeapi.Service.Transaction;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 //import java.time.LocalDate;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.abishek.financeapi.DTO.PdfDTO;
 import com.abishek.financeapi.DTO.TransactionDTO;
 import com.abishek.financeapi.Enum.TransactionType;
 import com.abishek.financeapi.Exception.CategoryNotFoundException;
@@ -195,6 +197,17 @@ public class TransactionServiceImpl implements TransactionService {
         List<Transaction> transactions = transactionRepository.findByUserIdAndType(userId, type);
         return transactions.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
+    
+	@Override
+	public PdfDTO getTransactionDataMonthly() {
+		LocalDate endDate = LocalDate.now();
+		
+		LocalDate startDate = endDate.minusDays(30);
+		
+		PdfDTO pdfDTO = new PdfDTO();
+		pdfDTO.setTransactionList(transactionRepository.findByDateBetweenOrderByDateDesc(startDate, endDate));		
+		return pdfDTO;
+	}
 
     private TransactionDTO mapToDTO(Transaction transaction) {
         return new TransactionDTO(

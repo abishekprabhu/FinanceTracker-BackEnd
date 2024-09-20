@@ -2,6 +2,7 @@ package com.abishek.financeapi.Service.Transaction;
 
 import java.util.List;
 
+import com.abishek.financeapi.DTO.PdfDTO;
 import com.abishek.financeapi.DTO.TransactionDTO;
 import com.abishek.financeapi.Enum.TransactionType;
 
@@ -22,4 +23,6 @@ public interface TransactionService {
     List<TransactionDTO> getTransactionsByCategory(Long userId, Long categoryId);
 
     List<TransactionDTO> getTransactionsByType(Long userId, TransactionType type);
+
+	PdfDTO getTransactionDataMonthly();
 }

@@ -30,5 +30,8 @@ public interface IncomeRepository extends JpaRepository<Income, Long> {
 	List<Income> findByDateBetweenOrderByDateDesc(LocalDate startDate, LocalDate endDate);
 
 	List<Income> findByDateBetweenOrderByDateAsc(LocalDate startDate, LocalDate endDate);
+
+	
+	 List<Income> findByUserIdAndDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
  
 }
