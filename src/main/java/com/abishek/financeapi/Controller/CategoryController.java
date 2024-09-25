@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.abishek.financeapi.DTO.CategoryDTO;
+import com.abishek.financeapi.Model.Category;
 import com.abishek.financeapi.Service.Category.CategoryService;
 
 @RestController
@@ -61,5 +62,20 @@ public class CategoryController {
         categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
+    
+
+    @GetMapping("/income")
+    public ResponseEntity<List<Category>> getIncomeCategories() {
+        List<Category> incomeCategories = categoryService.getIncomeCategories();
+        return ResponseEntity.ok(incomeCategories);
+    }
+
+
+    @GetMapping("/expense")
+    public ResponseEntity<List<Category>> getExpenseCategories() {
+        List<Category> expenseCategories = categoryService.getExpenseCategories();
+        return ResponseEntity.ok(expenseCategories);
+    }
+    
 }
 

@@ -141,6 +141,18 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
+    
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<Object> handleGlobalException(InsufficientBalanceException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.PAYMENT_REQUIRED.value());
+        body.put("error", "Internal Server Error");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).substring(4));
+
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     // Handle all other exceptions
     @ExceptionHandler(Exception.class)

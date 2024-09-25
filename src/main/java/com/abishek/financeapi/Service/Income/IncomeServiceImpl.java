@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.abishek.financeapi.Controller.NotificationController;
 import com.abishek.financeapi.DTO.ExpenseDTO;
 import com.abishek.financeapi.DTO.IncomeDTO;
 import com.abishek.financeapi.DTO.TransactionDTO;
@@ -24,6 +25,7 @@ import com.abishek.financeapi.Model.Income;
 import com.abishek.financeapi.Model.Transaction;
 import com.abishek.financeapi.Model.User;
 import com.abishek.financeapi.Repository.CategoryRepository;
+import com.abishek.financeapi.Repository.ExpenseRepository;
 import com.abishek.financeapi.Repository.IncomeRepository;
 import com.abishek.financeapi.Repository.TransactionRepository;
 import com.abishek.financeapi.Repository.UserRepository;
@@ -48,6 +50,11 @@ public class IncomeServiceImpl implements IncomeService{
     @Autowired
     private CategoryRepository categoryRepository;
     
+    @Autowired
+    private NotificationController notificationController;
+    
+    @Autowired
+    private ExpenseRepository expenseRepository;
     
     @Override
     @Transactional
@@ -79,6 +86,10 @@ public class IncomeServiceImpl implements IncomeService{
 
         // Save transaction
         transactionRepository.save(mapToTransaction(transactionDTO));
+        
+     // Send notifications
+        double currentBalance = getUserCurrentBalance(user);
+        notificationController.sendIncomeNotification(savedIncome.getAmount(),currentBalance);
 
         return mapToDTO(savedIncome);
     }
@@ -140,6 +151,10 @@ public class IncomeServiceImpl implements IncomeService{
         } else {        	
         	throw new IncomeNotFoundException("Income id Not Found");
         }
+        
+        // Send notifications
+        double currentBalance = getUserCurrentBalance(user);
+        notificationController.sendIncomeNotification(updatedIncome.getAmount(),currentBalance);
 
         return mapToDTO(updatedIncome);
     }
@@ -161,6 +176,9 @@ public class IncomeServiceImpl implements IncomeService{
         } else {
             throw new TransactionNotFoundException("Transaction not found for income ID: " + id);
         }
+
+     // Send notifications
+        notificationController.sendNotifications("Income deleted successful details : "+income.getDescription() +"with amount" + income.getAmount());
 
         // Now delete the income itself
         incomeRepository.deleteById(id);
@@ -196,6 +214,20 @@ public class IncomeServiceImpl implements IncomeService{
 
         return transaction;
     }
+    
+	private double getUserCurrentBalance(User user) {
+	    // Fetch total income and total expense for the user
+	    Double totalIncome = incomeRepository.findTotalByUserId(user.getId());
+	    Double totalExpense = expenseRepository.findTotalByUserId(user.getId());
+	    
+	    // If no income or no expense, handle nulls
+	    totalIncome = totalIncome != null ? totalIncome : 0.0;
+	    totalExpense = totalExpense != null ? totalExpense : 0.0;
+	    
+	    // Balance = Total Income - Total Expense
+	    return totalIncome - totalExpense;
+	}
+    
 	
     
     @Override

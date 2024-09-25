@@ -8,8 +8,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.abishek.financeapi.Controller.NotificationController;
 import com.abishek.financeapi.DTO.GraphDTO;
 import com.abishek.financeapi.DTO.MonthlyDataDTO;
 import com.abishek.financeapi.DTO.PdfDTO;
@@ -32,6 +34,7 @@ public class StatsServiceImpl implements StatsService {
 	private final ExpenseRepository expenseRepository;
 	
 	private final TransactionRepository transactionRepository;
+	
 	
 	@Override
 	public GraphDTO getChartDataMonthly() {
@@ -111,6 +114,9 @@ public class StatsServiceImpl implements StatsService {
 		optionalExpense.ifPresent(statsDTO::setLatestExpense);
 		
 		statsDTO.setBalance(totalIncome - totalExpense);
+		
+		
+//		notificationController.sendBalanceNotification(newBalance);
 		
 		List<Income> incomeList = incomeRepository.findAll();
 		List<Expense> expenseList = expenseRepository.findAll();

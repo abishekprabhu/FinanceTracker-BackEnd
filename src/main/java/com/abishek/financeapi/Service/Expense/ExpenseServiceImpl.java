@@ -9,11 +9,13 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.abishek.financeapi.Controller.NotificationController;
 import com.abishek.financeapi.DTO.ExpenseDTO;
 import com.abishek.financeapi.DTO.TransactionDTO;
 import com.abishek.financeapi.Enum.TransactionType;
 import com.abishek.financeapi.Exception.CategoryNotFoundException;
 import com.abishek.financeapi.Exception.ExpenseNotFoundException;
+import com.abishek.financeapi.Exception.InsufficientBalanceException;
 import com.abishek.financeapi.Exception.TransactionNotFoundException;
 import com.abishek.financeapi.Exception.UserNotFoundException;
 import com.abishek.financeapi.Model.Category;
@@ -45,17 +47,31 @@ public class ExpenseServiceImpl implements ExpenseService{
 
     @Autowired
     private CategoryRepository categoryRepository;
+    
+    @Autowired
+    private NotificationController notificationController;
+    
+    @Autowired
+    private IncomeRepository incomeRepository;
 
     @Override
     @Transactional
     public ExpenseDTO createExpense(ExpenseDTO expenseDTO) {
+    	
+        User user = userRepository.findById(expenseDTO.getUserId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    	
+    	double Balance = getUserCurrentBalance(user); // Method to get the user's balance
+
+        // Check if balance is sufficient for the new expense
+        if (Balance < expenseDTO.getAmount()) {
+            throw new InsufficientBalanceException("Insufficient balance to add this expense.");
+        }
         Expense expense = new Expense();
         expense.setDescription(expenseDTO.getDescription());
         expense.setAmount(expenseDTO.getAmount());
         expense.setDate(expenseDTO.getDate());
 
-        User user = userRepository.findById(expenseDTO.getUserId())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
         Category category = categoryRepository.findById(expenseDTO.getCategoryId())
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
 
@@ -63,7 +79,7 @@ public class ExpenseServiceImpl implements ExpenseService{
         expense.setCategory(category);
 
         Expense savedExpense = expenseRepository.save(expense);
-
+		
         // Create Transaction record
         TransactionDTO transactionDTO = new TransactionDTO();
         transactionDTO.setDescription(expense.getDescription());
@@ -76,12 +92,26 @@ public class ExpenseServiceImpl implements ExpenseService{
 
         // Save transaction
         transactionRepository.save(mapToTransaction(transactionDTO));
+        
+        // Send notifications
+        double currentBalance = getUserCurrentBalance(user);
+        notificationController.sendExpenseNotification(savedExpense.getAmount(),currentBalance);
 
         return mapToDTO(savedExpense);
     }
 	
     @Override
     public ExpenseDTO updateExpense(Long id, ExpenseDTO expenseDTO) {
+    	
+        User user = userRepository.findById(expenseDTO.getUserId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    	
+    	double Balance = getUserCurrentBalance(user);
+
+        // Check if balance is sufficient for the new expense
+        if (Balance < expenseDTO.getAmount()) {
+            throw new InsufficientBalanceException("Insufficient balance to update this expense.");
+        }
         // Fetch the expense to be updated
         Expense expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new ExpenseNotFoundException("Expense not found"));
@@ -91,9 +121,6 @@ public class ExpenseServiceImpl implements ExpenseService{
         expense.setAmount(expenseDTO.getAmount());
         expense.setDate(expenseDTO.getDate());
 
-        // Fetch the user and category
-        User user = userRepository.findById(expenseDTO.getUserId())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
         Category category = categoryRepository.findById(expenseDTO.getCategoryId())
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
 
@@ -122,6 +149,10 @@ public class ExpenseServiceImpl implements ExpenseService{
         } else {        	
         	throw new ExpenseNotFoundException("Expense id Not Found");
         }
+        
+        // Send notifications
+        double currentBalance = getUserCurrentBalance(user);
+        notificationController.sendExpenseNotification(updatedExpense.getAmount(),currentBalance);
 
         return mapToDTO(updatedExpense);
     }
@@ -212,6 +243,19 @@ public class ExpenseServiceImpl implements ExpenseService{
         		.map(this::mapToDTO)
         		.collect(Collectors.toList());
     }
+    
+	private double getUserCurrentBalance(User user) {
+	    // Fetch total income and total expense for the user
+	    Double totalIncome = incomeRepository.findTotalByUserId(user.getId());
+	    Double totalExpense = expenseRepository.findTotalByUserId(user.getId());
+	    
+	    // If no income or no expense, handle nulls
+	    totalIncome = totalIncome != null ? totalIncome : 0.0;
+	    totalExpense = totalExpense != null ? totalExpense : 0.0;
+	    
+	    // Balance = Total Income - Total Expense
+	    return totalIncome - totalExpense;
+	}
     
     
 

@@ -99,6 +99,18 @@ public class CategoryServiceImpl implements CategoryService {
         // Delete the category
         categoryRepository.deleteById(id);
     }
+    
+    @Override
+    public List<Category> getIncomeCategories() {
+        // Fetch categories that are associated with incomes
+        return categoryRepository.findByIncomesIsNotNull();
+    }
+
+    @Override
+    public List<Category> getExpenseCategories() {
+        // Fetch categories that are associated with expenses
+        return categoryRepository.findByExpensesIsNotNull();
+    }
 
     private CategoryDTO mapToDTO(Category category) {
         CategoryDTO categoryDTO = new CategoryDTO();

@@ -33,5 +33,8 @@ public interface IncomeRepository extends JpaRepository<Income, Long> {
 
 	
 	 List<Income> findByUserIdAndDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
- 
+	 
+	    // Query to calculate the total income for a specific user
+	    @Query("SELECT SUM(i.amount) FROM Income i WHERE i.user.id = :userId")
+	    Double findTotalByUserId(Long userId);
 }

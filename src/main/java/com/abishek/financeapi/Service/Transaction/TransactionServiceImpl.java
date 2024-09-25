@@ -15,6 +15,7 @@ import com.abishek.financeapi.Enum.TransactionType;
 import com.abishek.financeapi.Exception.CategoryNotFoundException;
 import com.abishek.financeapi.Exception.ExpenseNotFoundException;
 import com.abishek.financeapi.Exception.IncomeNotFoundException;
+import com.abishek.financeapi.Exception.InsufficientBalanceException;
 import com.abishek.financeapi.Exception.TransactionNotFoundException;
 import com.abishek.financeapi.Exception.UserNotFoundException;
 import com.abishek.financeapi.Model.Category;
@@ -84,8 +85,12 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setIncome(income);
         }
 
-        // Handling Expense: if expenseId is null, create a new Expense
+        // Handling Expense: check balance before creating the expense
         if (transactionDTO.getType() == TransactionType.EXPENSE && transactionDTO.getExpenseId() == null) {
+            double currentBalance = getUserCurrentBalance(user); // Method to get the user's balance
+            if (currentBalance < transactionDTO.getAmount()) {
+                throw new InsufficientBalanceException("Insufficient balance to complete the transaction.");
+            }
             Expense newExpense = new Expense();
             newExpense.setDescription(transaction.getDescription());
             newExpense.setAmount(transaction.getAmount());
@@ -104,6 +109,7 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction savedTransaction = transactionRepository.save(transaction);
         return mapToDTO(savedTransaction);
     }
+
 
 
     @Override
@@ -145,12 +151,18 @@ public class TransactionServiceImpl implements TransactionService {
                     .orElseThrow(() -> new IncomeNotFoundException("Income not found"));
             transaction.setIncome(income);
         }
-
+        
+        // Handling Expense: check balance before creating the expense
         if (transactionDTO.getExpenseId() != null) {
-            Expense expense = expenseRepository.findById(transactionDTO.getExpenseId())
-                    .orElseThrow(() -> new ExpenseNotFoundException("Expense not found"));
-            transaction.setExpense(expense);
-        }
+           double currentBalance = getUserCurrentBalance(user); // Method to get the user's balance
+           if (currentBalance < transactionDTO.getAmount()) {
+                throw new InsufficientBalanceException("Insufficient balance to complete the transaction.");
+            }
+            
+	       Expense expense = expenseRepository.findById(transactionDTO.getExpenseId())
+	                .orElseThrow(() -> new ExpenseNotFoundException("Expense not found"));
+	       transaction.setExpense(expense);            
+        }     
 
         Transaction updatedTransaction = transactionRepository.save(transaction);
         return mapToDTO(updatedTransaction);
@@ -208,6 +220,20 @@ public class TransactionServiceImpl implements TransactionService {
 		pdfDTO.setTransactionList(transactionRepository.findByDateBetweenOrderByDateDesc(startDate, endDate));		
 		return pdfDTO;
 	}
+	
+	private double getUserCurrentBalance(User user) {
+	    // Fetch total income and total expense for the user
+	    Double totalIncome = incomeRepository.findTotalByUserId(user.getId());
+	    Double totalExpense = expenseRepository.findTotalByUserId(user.getId());
+	    
+	    // If no income or no expense, handle nulls
+	    totalIncome = totalIncome != null ? totalIncome : 0.0;
+	    totalExpense = totalExpense != null ? totalExpense : 0.0;
+	    
+	    // Balance = Total Income - Total Expense
+	    return totalIncome - totalExpense;
+	}
+
 
     private TransactionDTO mapToDTO(Transaction transaction) {
         return new TransactionDTO(
