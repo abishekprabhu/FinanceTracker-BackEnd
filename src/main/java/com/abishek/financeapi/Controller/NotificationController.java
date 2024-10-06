@@ -13,23 +13,6 @@ import com.abishek.financeapi.DTO.NotificationDTO;
 @CrossOrigin("*")
 public class NotificationController {
 
-//    private final NotificationService notificationService;
-
-
-//    public NotificationController(NotificationService notificationService) {
-//        this.notificationService = notificationService;
-//    }
-//
-//    /**
-//     * Endpoint to trigger real-time notification.
-//     * 
-//     * @param message the notification message to send
-//     */
-//    @PostMapping("/api/notify")
-//    public void notifyClients(@RequestParam String message) {
-//        notificationService.sendRealTimeNotification(message);
-//    }
-    
     // Handle messages sent to /app/sendNotification
 	
 	 private final SimpMessagingTemplate messagingTemplate;
