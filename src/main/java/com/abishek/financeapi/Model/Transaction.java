@@ -55,6 +55,11 @@ public class Transaction {
     @JoinColumn(name = "expense_id")
     @JsonBackReference
     private Expense expense;
+    
+    @ManyToOne
+    @JoinColumn(name = "wallet_id")
+    @JsonBackReference
+    private Wallet wallet;
 
 }
 

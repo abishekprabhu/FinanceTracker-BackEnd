@@ -31,6 +31,16 @@ public class NotificationController {
         messagingTemplate.convertAndSend("/topic/notifications", notification);
     }
     
+    public void sendWalletNotification(double amount , double balance) {
+        NotificationDTO notification = new NotificationDTO("credit", "Wallet added", amount, balance);
+        messagingTemplate.convertAndSend("/topic/notifications", notification);
+    }
+    
+    public void sendBillNotification(double amount , double balance) {
+        NotificationDTO notification = new NotificationDTO("credit", "Bill Payed", amount, balance);
+        messagingTemplate.convertAndSend("/topic/notifications", notification);
+    }
+    
     public void sendNotifications(String message) {
         // This message will be broadcast to all subscribers of /topic/notifications
     	 messagingTemplate.convertAndSend("/topic/notifications", message);
@@ -49,6 +59,7 @@ public class NotificationController {
         // This message will be broadcast to all subscribers of /topic/notifications
         return message;
     }
+    
 }
 
 

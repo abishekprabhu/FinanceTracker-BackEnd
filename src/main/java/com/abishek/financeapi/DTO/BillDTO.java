@@ -2,8 +2,6 @@ package com.abishek.financeapi.DTO;
 
 import java.time.LocalDate;
 
-import com.abishek.financeapi.Enum.TransactionType;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,25 +9,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class TransactionDTO {
-	
+public class BillDTO {
     private Long id;
-    
     private String description;
-    
-    private double amount;
-    
-    private TransactionType type; // INCOME or EXPENSE
-    
-    private LocalDate date;
-    
+    private double amountDue;
+    private LocalDate dueDate;
+    private boolean isPaid;
     private Long userId;
-    
     private Long categoryId;
-    
-    private Long incomeId;
-    
-    private Long expenseId;
-    
     private Long walletId;
+//    private Long transactionDetailsId;
 }

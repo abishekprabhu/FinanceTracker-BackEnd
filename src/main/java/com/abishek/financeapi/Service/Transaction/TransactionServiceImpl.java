@@ -245,7 +245,8 @@ public class TransactionServiceImpl implements TransactionService {
                 transaction.getUser().getId(),
                 transaction.getCategory().getId(), 
                 transaction.getIncome() != null ? transaction.getIncome().getId() : null,
-                transaction.getExpense() != null ? transaction.getExpense().getId() : null);
-    }
+                transaction.getExpense() != null ? transaction.getExpense().getId() : null,
+        		transaction.getWallet() != null ? transaction.getWallet().getId() : null);
+        		}
 }
 

@@ -122,7 +122,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Expense Not Found");
+        body.put("error", "Transaction Not Found");
         body.put("message", ex.getMessage());
         body.put("path", request.getDescription(false).substring(4));  // Extract URI from the request
 
@@ -135,7 +135,19 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Expense Not Found");
+        body.put("error", "Budget Not Found");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).substring(4));  // Extract URI from the request
+
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+    
+    @ExceptionHandler(BillNotFoundException.class)
+    public ResponseEntity<Object> handleBillNotFoundException(BillNotFoundException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Bill Not Found");
         body.put("message", ex.getMessage());
         body.put("path", request.getDescription(false).substring(4));  // Extract URI from the request
 
@@ -147,11 +159,11 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.PAYMENT_REQUIRED.value());
-        body.put("error", "Internal Server Error");
+        body.put("error", "Insufficient Balance");
         body.put("message", ex.getMessage());
         body.put("path", request.getDescription(false).substring(4));
 
-        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(body, HttpStatus.PAYMENT_REQUIRED);
     }
 
     // Handle all other exceptions
@@ -166,6 +178,31 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    
+    @ExceptionHandler(WalletNotFoundException.class)
+    public ResponseEntity<Object> handleGlobalWalletNotFoundException(WalletNotFoundException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Wallet Not Found");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).substring(4));  // Extract URI from the request
+
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+    
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Object> handleGlobalRunException(RuntimeException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        body.put("error", "Internal Server Error");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getDescription(false).substring(4));
+
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     
     @ExceptionHandler(IOException.class)
     public ResponseEntity<Object> handleGlobalIOException(IOException ex, WebRequest request) {

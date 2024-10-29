@@ -26,4 +26,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 	List<Transaction> findByDateBetweenOrderByDateDesc(LocalDate startDate, LocalDate endDate);
 
 	List<Transaction> findByDateBetweenOrderByDateAsc(LocalDate startDate, LocalDate endDate);
+	
+    List<Transaction> findByWalletId(Long walletId);
 }

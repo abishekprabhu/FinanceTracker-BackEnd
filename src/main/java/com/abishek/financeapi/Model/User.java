@@ -2,8 +2,12 @@ package com.abishek.financeapi.Model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,6 +26,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class User {
 	
 	
@@ -48,6 +53,14 @@ public class User {
     @OneToMany(mappedBy = "user")
     @JsonManagedReference
     private List<Income> incomes;
+    
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Bill> bills;
+    
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    @JsonIgnore 
+    private List<Wallet> wallets;
     
     // Add profile picture as a BLOB (Binary Large Object)
     @Lob
