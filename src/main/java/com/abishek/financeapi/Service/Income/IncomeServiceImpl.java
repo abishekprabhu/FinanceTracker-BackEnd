@@ -44,7 +44,7 @@ public class IncomeServiceImpl implements IncomeService{
     @Autowired
     private TransactionRepository transactionRepository;
 
-    @Autowired
+    @Autowired  
     private UserRepository userRepository;
 
     @Autowired

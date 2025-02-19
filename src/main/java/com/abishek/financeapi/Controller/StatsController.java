@@ -27,9 +27,9 @@ public class StatsController {
 	public ResponseEntity<GraphDTO> getChartWeekly(){
 		return ResponseEntity.ok(statsService.getChartDataWeekly());
 	}
-	@GetMapping("/chart/monthly")
-	public ResponseEntity<GraphDTO> getChartMonthly(){
-		return ResponseEntity.ok(statsService.getChartDataMonthly());
+	@GetMapping("/chart/monthly/user/{userId}")
+	public ResponseEntity<GraphDTO> getChartMonthly(@PathVariable Long userId){
+		return ResponseEntity.ok(statsService.getChartDataMonthly(userId));
 	}
 	
 	@GetMapping("/chart/quartarly")
@@ -48,9 +48,9 @@ public class StatsController {
 		return ResponseEntity.ok(statsService.getTransactionDataMonthly());
 	}
 	
-	@GetMapping
-	public ResponseEntity<?> getStats(){
-		return ResponseEntity.ok(statsService.getStats());
+	@GetMapping("/user/{id}")
+	public ResponseEntity<?> getStats(@PathVariable Long id){
+		return ResponseEntity.ok(statsService.getUserStats(id));
 	}
 	
     @GetMapping("/summary/{userId}")
@@ -59,9 +59,9 @@ public class StatsController {
         return ResponseEntity.ok(summary);
     }
     
-    @GetMapping("/monthly-data")
-    public ResponseEntity<MonthlyDataDTO> getMonthlyData() {
-        MonthlyDataDTO monthlyData = statsService.getMonthlyData();
+    @GetMapping("/monthly-data/user/{userId}")
+    public ResponseEntity<MonthlyDataDTO> getMonthlyData(@PathVariable Long userId) {
+        MonthlyDataDTO monthlyData = statsService.getMonthlyData(userId);
         return ResponseEntity.ok(monthlyData);
     }
 

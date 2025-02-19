@@ -2,6 +2,13 @@ package com.abishek.financeapi.Controller;
 
 import java.util.List;
 
+import com.abishek.financeapi.DTO.CategoryDTO;
+import com.abishek.financeapi.Service.Category.CategoryService;
+import lombok.RequiredArgsConstructor;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.cache.annotation.CacheEvict;
+//import org.springframework.cache.annotation.CachePut;
+//import org.springframework.cache.annotation.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,19 +22,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.abishek.financeapi.DTO.CategoryDTO;
 import com.abishek.financeapi.Model.Category;
-import com.abishek.financeapi.Service.Category.CategoryService;
+
 
 @RestController
 @RequestMapping("/api/categories")
 @CrossOrigin()
+@RequiredArgsConstructor
 public class CategoryController {
 
-    @Autowired
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
 
     @PostMapping
+ //   @CacheEvict(value = "category", allEntries = true)
     public ResponseEntity<CategoryDTO> createCategory(@RequestBody CategoryDTO categoryDTO) {
         CategoryDTO createdCategory = categoryService.createCategory(categoryDTO);
         if(createdCategory != null)
@@ -36,19 +43,22 @@ public class CategoryController {
         	return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<CategoryDTO>> getAllCategories() {
-        List<CategoryDTO> categories = categoryService.getAllCategories();
+    @GetMapping("/all/user/{userId}")
+//    @Cacheable(value = "category", key = "#userId", unless = "#result == null || #result.EMPTY")
+    public ResponseEntity<List<CategoryDTO>> getAllCategories(@PathVariable Long userId) {
+        List<CategoryDTO> categories = categoryService.getAllCategoryByUser(userId);
         return ResponseEntity.ok(categories);
     }
 
     @GetMapping("/{id}")
+  //  @Cacheable(value = "category", key = "#id", unless = "#result == null")
     public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Long id) {
         CategoryDTO categoryDTO = categoryService.getCategoryById(id);
         return ResponseEntity.ok(categoryDTO);
     }
 
     @PutMapping("/{id}")
+  //  @CachePut(value = "category", key = "#id", unless = "#result == null")
     public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @RequestBody CategoryDTO categoryDTO) {
         CategoryDTO updatedCategory = categoryService.updateCategory(id, categoryDTO);
         if(updatedCategory != null)
@@ -58,22 +68,24 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+   // @CacheEvict(value = "category", key = "#id")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
-    
 
-    @GetMapping("/income")
-    public ResponseEntity<List<Category>> getIncomeCategories() {
-        List<Category> incomeCategories = categoryService.getIncomeCategories();
+
+    @GetMapping("/income/user/{userId}")
+   // @Cacheable(value = "category", key = "#userId", unless = "#result == null || #result.EMPTY")
+    public ResponseEntity<List<Category>> getIncomeCategories(@PathVariable Long userId) {
+        List<Category> incomeCategories = categoryService.getIncomeCategories(userId);
         return ResponseEntity.ok(incomeCategories);
     }
 
-
-    @GetMapping("/expense")
-    public ResponseEntity<List<Category>> getExpenseCategories() {
-        List<Category> expenseCategories = categoryService.getExpenseCategories();
+    @GetMapping("/expense/user/{userId}")
+    //@Cacheable(value = "category", key = "#userId", unless = "#result == null || #result.EMPTY")
+    public ResponseEntity<List<Category>> getExpenseCategories(@PathVariable Long userId) {
+        List<Category> expenseCategories = categoryService.getExpenseCategories(userId);
         return ResponseEntity.ok(expenseCategories);
     }
     

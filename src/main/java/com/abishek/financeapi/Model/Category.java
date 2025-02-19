@@ -2,15 +2,12 @@ package com.abishek.financeapi.Model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,4 +40,8 @@ public class Category {
     @OneToMany(mappedBy = "category")
     @JsonManagedReference
     private List<Bill> bills;
+
+    @ManyToOne
+    @JsonBackReference
+    private User user;
 }

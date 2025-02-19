@@ -2,16 +2,10 @@ package com.abishek.financeapi.Service.Stats;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalDouble;
+import java.util.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.abishek.financeapi.Controller.NotificationController;
 import com.abishek.financeapi.DTO.GraphDTO;
 import com.abishek.financeapi.DTO.MonthlyDataDTO;
 import com.abishek.financeapi.DTO.PdfDTO;
@@ -37,14 +31,14 @@ public class StatsServiceImpl implements StatsService {
 	
 	
 	@Override
-	public GraphDTO getChartDataMonthly() {
+	public GraphDTO getChartDataMonthly(Long userId) {
 		LocalDate endDate = LocalDate.now();
 		
 		LocalDate startDate = endDate.minusDays(30);
 		
 		GraphDTO graphDTO = new GraphDTO();
-		graphDTO.setExpenseList(expenseRepository.findByDateBetweenOrderByDateAsc(startDate, endDate));
-		graphDTO.setIncomeList(incomeRepository.findByDateBetweenOrderByDateAsc(startDate, endDate));
+		graphDTO.setExpenseList(expenseRepository.findByUserIdAndDateBetweenOrderByDateAsc(userId,startDate, endDate));
+		graphDTO.setIncomeList(incomeRepository.findByUserIdAndDateBetweenOrderByDateAsc(userId,startDate, endDate));
 		
 		return graphDTO;
 	}
@@ -98,44 +92,40 @@ public class StatsServiceImpl implements StatsService {
 		pdfDTO.setTransactionList(transactionRepository.findByDateBetweenOrderByDateDesc(startDate, endDate));		
 		return pdfDTO;
 	}
-	
-	public StatsDTO getStats() {
-		Double totalIncome = incomeRepository.SumAllAmount();
-		Double totalExpense = expenseRepository.SumAllAmount();
-		
-		Optional<Income> optionalIncome = incomeRepository.findFirstByOrderByDateDesc();
-		Optional<Expense> optionalExpense = expenseRepository.findFirstByOrderByDateDesc();
-		
-		StatsDTO statsDTO = new StatsDTO();
-		statsDTO.setExpense(totalExpense);
-		statsDTO.setIncome(totalIncome);
-		
-		optionalIncome.ifPresent(statsDTO::setLatestIncome);
-		optionalExpense.ifPresent(statsDTO::setLatestExpense);
-		
-		statsDTO.setBalance(totalIncome - totalExpense);
-		
-		
-//		notificationController.sendBalanceNotification(newBalance);
-		
-		List<Income> incomeList = incomeRepository.findAll();
-		List<Expense> expenseList = expenseRepository.findAll();
-		
-		OptionalDouble minIncome = incomeList.stream().mapToDouble(Income::getAmount).min();
-		OptionalDouble maxIncome = incomeList.stream().mapToDouble(Income::getAmount).max();
-		
-		OptionalDouble minExpense = expenseList.stream().mapToDouble(Expense::getAmount).min();
-		OptionalDouble maxExpense = expenseList.stream().mapToDouble(Expense::getAmount).max();
-		
-		statsDTO.setMaxExpense(maxExpense.isPresent()? maxExpense.getAsDouble() : null);
-		statsDTO.setMinExpense(minExpense.isPresent()? minExpense.getAsDouble() : null);
-		
-		statsDTO.setMaxIncome(maxIncome.isPresent()? maxIncome.getAsDouble() : null);
-		statsDTO.setMinIncome(minIncome.isPresent()? minIncome.getAsDouble() : null);
-		
-		
-		return statsDTO;
-	}
+
+    @Override
+    public StatsDTO getUserStats(Long userId){
+        Double totalIncome = incomeRepository.SumAllAmountByUserId(userId);
+        Double totalExpense = expenseRepository.SumAllAmountByUserId(userId);
+
+        Optional<Income> optionalIncome = incomeRepository.findFirstByUserIdOrderByDateDesc(userId);
+        Optional<Expense> optionalExpense = expenseRepository.findFirstByUserIdOrderByDateDesc(userId);
+
+        StatsDTO statsDTO = new StatsDTO();
+        statsDTO.setIncome(totalIncome);
+        statsDTO.setExpense(totalExpense);
+
+        optionalExpense.ifPresent(statsDTO::setLatestExpense);
+        optionalIncome.ifPresent(statsDTO::setLatestIncome);
+
+        statsDTO.setBalance(totalIncome-totalExpense);
+
+        List<Income> incomeList = incomeRepository.findAllByUserId(userId);
+        List<Expense> expenseList = expenseRepository.findAllByUserId(userId);
+
+        OptionalDouble minIncome = incomeList.stream().mapToDouble(Income::getAmount).min();
+        OptionalDouble maxIncome = incomeList.stream().mapToDouble(Income::getAmount).max();
+
+        OptionalDouble minExpense = expenseList.stream().mapToDouble(Expense::getAmount).min();
+        OptionalDouble maxExpense = expenseList.stream().mapToDouble(Expense::getAmount).max();
+
+        statsDTO.setMaxIncome(maxIncome.isPresent() ? maxIncome.getAsDouble() : null);
+        statsDTO.setMinIncome(minIncome.isPresent() ? minIncome.getAsDouble() : null);
+        statsDTO.setMaxExpense(maxExpense.isPresent() ? maxExpense.getAsDouble() : null);
+        statsDTO.setMinExpense(minExpense.isPresent() ? minExpense.getAsDouble() : null);
+
+        return statsDTO;
+    }
 	
 	@Override
     public PercentageDTO getTransactionSummary(Long userId) {
@@ -192,34 +182,64 @@ public class StatsServiceImpl implements StatsService {
 	}
 	
 	
+//	@Override
+//	public MonthlyDataDTO getMonthlyData() {
+//	    LocalDate now = LocalDate.now();
+//	    LocalDate startDate = LocalDate.of(now.getYear(), 1, 1); // Start of the year
+//
+//	    List<Income> incomeList = incomeRepository.findByDateBetween(startDate, now);
+//	    List<Expense> expenseList = expenseRepository.findByDateBetween(startDate, now);
+//
+//	    MonthlyDataDTO monthlyData = new MonthlyDataDTO();
+//	    Map<Integer, BigDecimal> incomeMap = new HashMap<>();
+//	    Map<Integer, BigDecimal> expenseMap = new HashMap<>();
+//
+//	    // Aggregate income
+//	    for (Income income : incomeList) {
+//	        int month = income.getDate().getMonthValue();
+//	        incomeMap.merge(month, BigDecimal.valueOf(income.getAmount()), BigDecimal::add);
+//	    }
+//
+//	    // Aggregate expense
+//	    for (Expense expense : expenseList) {
+//	        int month = expense.getDate().getMonthValue();
+//	        expenseMap.merge(month, BigDecimal.valueOf(expense.getAmount()), BigDecimal::add);
+//	    }
+//
+//	    // Fill in the data
+//	    monthlyData.setIncomeData(incomeMap);
+//	    monthlyData.setExpenseData(expenseMap);
+//	    return monthlyData;
+//	}
+
 	@Override
-	public MonthlyDataDTO getMonthlyData() {
-	    LocalDate now = LocalDate.now();
-	    LocalDate startDate = LocalDate.of(now.getYear(), 1, 1); // Start of the year
-	    
-	    List<Income> incomeList = incomeRepository.findByDateBetween(startDate, now);
-	    List<Expense> expenseList = expenseRepository.findByDateBetween(startDate, now);
-	    
-	    MonthlyDataDTO monthlyData = new MonthlyDataDTO();
-	    Map<Integer, BigDecimal> incomeMap = new HashMap<>();
-	    Map<Integer, BigDecimal> expenseMap = new HashMap<>();
+	public MonthlyDataDTO getMonthlyData(Long userId) {
+		LocalDate now = LocalDate.now();
+		LocalDate startDate = LocalDate.of(now.getYear(), 1, 1); // Start of the year
 
-	    // Aggregate income
-	    for (Income income : incomeList) {
-	        int month = income.getDate().getMonthValue();
-	        incomeMap.merge(month, BigDecimal.valueOf(income.getAmount()), BigDecimal::add);
-	    }
+		List<Income> incomeList = incomeRepository.findByUserIdAndDateBetween(userId,startDate, now);
+		List<Expense> expenseList = expenseRepository.findByUserIdAndDateBetween(userId,startDate, now);
 
-	    // Aggregate expense
-	    for (Expense expense : expenseList) {
-	        int month = expense.getDate().getMonthValue();
-	        expenseMap.merge(month, BigDecimal.valueOf(expense.getAmount()), BigDecimal::add);
-	    }
+		MonthlyDataDTO monthlyData = new MonthlyDataDTO();
+		Map<Integer, BigDecimal> incomeMap = new HashMap<>();
+		Map<Integer, BigDecimal> expenseMap = new HashMap<>();
 
-	    // Fill in the data
-	    monthlyData.setIncomeData(incomeMap);
-	    monthlyData.setExpenseData(expenseMap);
-	    return monthlyData;
+		// Aggregate income
+		for (Income income : incomeList) {
+			int month = income.getDate().getMonthValue();
+			incomeMap.merge(month, BigDecimal.valueOf(income.getAmount()), BigDecimal::add);
+		}
+
+		// Aggregate expense
+		for (Expense expense : expenseList) {
+			int month = expense.getDate().getMonthValue();
+			expenseMap.merge(month, BigDecimal.valueOf(expense.getAmount()), BigDecimal::add);
+		}
+
+		// Fill in the data
+		monthlyData.setIncomeData(incomeMap);
+		monthlyData.setExpenseData(expenseMap);
+		return monthlyData;
 	}
 
 

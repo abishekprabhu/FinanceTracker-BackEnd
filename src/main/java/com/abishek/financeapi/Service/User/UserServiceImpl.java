@@ -19,7 +19,8 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
+public class
+UserServiceImpl implements UserService{
 	
 	private final UserRepository userRepository;
 	
@@ -51,7 +52,7 @@ public class UserServiceImpl implements UserService{
 				.orElseThrow(()->new UserNotFoundException("User with Email this  " + userDTO.getEmail() + " is not found"));
 		if(!user.getPassword().equals(userDTO.getPassword()))
 			throw new CustomException("Invalid Password Or Wrong Password");	
-		
+
 		return user;
 	}
 	

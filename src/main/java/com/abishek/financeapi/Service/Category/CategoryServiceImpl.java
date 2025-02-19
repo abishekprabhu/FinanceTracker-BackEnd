@@ -4,12 +4,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.abishek.financeapi.Exception.UserNotFoundException;
+import com.abishek.financeapi.Model.User;
+import com.abishek.financeapi.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.abishek.financeapi.DTO.CategoryDTO;
 import com.abishek.financeapi.Exception.CategoryNotFoundException;
-import com.abishek.financeapi.Exception.CustomException;
 import com.abishek.financeapi.Exception.DuplicateCategoryException;
 import com.abishek.financeapi.Model.Category;
 import com.abishek.financeapi.Model.Expense;
@@ -25,32 +27,41 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
-    
-    @Autowired
-    private IncomeRepository incomeRepository;
+    private final CategoryRepository categoryRepository;
 
-    @Autowired
-    private ExpenseRepository expenseRepository;
+    private final IncomeRepository incomeRepository;
+
+    private final ExpenseRepository expenseRepository;
+
+    private final UserRepository userRepository;
 
     @Override
     public CategoryDTO createCategory(CategoryDTO categoryDTO) {
-    	Optional<Category> existingCategory = categoryRepository.findByName(categoryDTO.getName());
+
+        Optional<Category> existingCategory = categoryRepository.findByNameAndUserId(categoryDTO.getName(),categoryDTO.getUserId());
     	
     	if(existingCategory.isPresent()) {
-    		throw new DuplicateCategoryException("Category with name " + categoryDTO.getName() +" already Exists");
+    		throw new DuplicateCategoryException("Category with name " + categoryDTO.getName() +" already Exists for this User");
     	}
         Category category = new Category();
         category.setName(categoryDTO.getName());
+
+        User user = userRepository.findById(categoryDTO.getUserId())
+                .orElseThrow(() -> new UserNotFoundException("User with id " + categoryDTO.getUserId() + " not found"));
+        category.setUser(user);
         Category savedCategory = categoryRepository.save(category);
         return mapToDTO(savedCategory);
     }
 
+//    @Override
+//    public List<CategoryDTO> getAllCategories() {
+//        List<Category> categories = categoryRepository.findAll();
+//        return categories.stream().map(this::mapToDTO).collect(Collectors.toList());
+//    }
     @Override
-    public List<CategoryDTO> getAllCategories() {
-        List<Category> categories = categoryRepository.findAll();
-        return categories.stream().map(this::mapToDTO).collect(Collectors.toList());
+    public List<CategoryDTO> getAllCategoryByUser(Long userId) {
+        List<Category> category = categoryRepository.findByUserId(userId);
+        return category.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     @Override
@@ -66,13 +77,17 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
     	
-    	Optional<Category> existingCategory = categoryRepository.findByName(categoryDTO.getName());
+    	Optional<Category> existingCategory = categoryRepository.findByNameAndUserId(categoryDTO.getName(),categoryDTO.getUserId());
     	
-    	if(existingCategory.isPresent()) {
+    	if(existingCategory.isPresent() && !existingCategory.get().getId().equals(category.getId())) {
     		throw new DuplicateCategoryException("Category with name " + categoryDTO.getName() +" already Exists");
     	}
     	
         category.setName(categoryDTO.getName());
+
+        User user = userRepository.findById(categoryDTO.getUserId())
+                .orElseThrow(() -> new UserNotFoundException("User with id " + categoryDTO.getUserId() + " not found"));
+        category.setUser(user);
         Category updatedCategory = categoryRepository.save(category);
         return mapToDTO(updatedCategory);
     }
@@ -101,21 +116,24 @@ public class CategoryServiceImpl implements CategoryService {
     }
     
     @Override
-    public List<Category> getIncomeCategories() {
+    public List<Category> getIncomeCategories(Long userId) {
         // Fetch categories that are associated with incomes
-        return categoryRepository.findByIncomesIsNotNull();
+        return categoryRepository.findByUserIdAndIncomesIsNotNull(userId);
+//        return category.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     @Override
-    public List<Category> getExpenseCategories() {
+    public List<Category> getExpenseCategories(Long userId) {
         // Fetch categories that are associated with expenses
-        return categoryRepository.findByExpensesIsNotNull();
+        return categoryRepository.findByUserIdAndIncomesIsNotNull(userId);
+//        return category.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     private CategoryDTO mapToDTO(Category category) {
         CategoryDTO categoryDTO = new CategoryDTO();
         categoryDTO.setId(category.getId());
         categoryDTO.setName(category.getName());
+        categoryDTO.setUserId(category.getUser().getId());
         return categoryDTO;
     }
 }
