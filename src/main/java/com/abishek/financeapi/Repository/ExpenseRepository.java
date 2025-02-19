@@ -18,8 +18,8 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 	
 	List<Expense> findByDateBetween(LocalDate startDate , LocalDate endDate);
 	
-	@Query("SELECT SUM(e.amount) FROM Expense e")
-	Double SumAllAmount();
+//	@Query("SELECT SUM(e.amount) FROM Expense e")
+//	Double SumAllAmount();
 	
 	Optional<Expense> findFirstByOrderByDateDesc();
 	
@@ -45,4 +45,13 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     // Query to calculate the total expense for a specific user
     @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId")
     Double findTotalByUserId(Long userId);
+
+	@Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId")
+    Double SumAllAmountByUserId(Long userId);
+
+	Optional<Expense> findFirstByUserIdOrderByDateDesc(Long userId);
+
+	List<Expense> findAllByUserId(Long userId);
+
+    List<Expense> findByUserIdAndDateBetweenOrderByDateAsc(Long userId, LocalDate startDate, LocalDate endDate);
 }

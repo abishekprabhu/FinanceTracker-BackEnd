@@ -1,6 +1,7 @@
 package com.abishek.financeapi.Service.User;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import com.abishek.financeapi.DTO.ResetPasswordDTO;
 import com.abishek.financeapi.DTO.UserDTO;

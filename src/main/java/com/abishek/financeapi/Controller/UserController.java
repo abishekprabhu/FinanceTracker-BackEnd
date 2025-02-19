@@ -2,8 +2,13 @@ package com.abishek.financeapi.Controller;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.SerializationException;
+//import org.springframework.cache.annotation.CacheEvict;
+//import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 
 import com.abishek.financeapi.DTO.ResetPasswordDTO;
 import com.abishek.financeapi.DTO.UserDTO;
@@ -29,39 +32,47 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/user")
 @CrossOrigin("*")
+@Slf4j
 public class UserController {
-	
-	@Autowired
-	private final UserService userService;
-	
-	@PostMapping("/signup")
-	public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO){
-		User createdUser = userService.registerUser(userDTO);
-		if(createdUser != null) {
-			return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);			
-		}else
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already exists.");
-	}
-	
-	@PostMapping("/login")
-	public ResponseEntity<?> LoginUser(@RequestBody UserDTO userDTO){
-		User login = userService.loginUser(userDTO);
-		if(login != null) {
-			return ResponseEntity.status(HttpStatus.OK).body(login);
-		}
-		
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	}
-	
+
+    private final UserService userService;
+
+    @PostMapping("/signup")
+ //   @CacheEvict(value = "users", allEntries = true) // Clear cache when a new user is registered
+    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
+        User createdUser = userService.registerUser(userDTO);
+        if (createdUser != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } else
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already exists.");
+    }
+
+    @PostMapping("/login")
+ //   @Cacheable(value = "users", key = "#userDTO.email") // Cache login data by email
+    public ResponseEntity<?> LoginUser(@RequestBody UserDTO userDTO) {
+        try {
+            User login = userService.loginUser(userDTO);
+            if (login != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(login);
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (SerializationException e) {
+            log.error("Serialization issue: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Serialization issue");
+        }
+    }
+
     // Reset Password Endpoint
     @PostMapping("/reset-password")
+  //  @CacheEvict(value = "users", key = "#resetPasswordDTO.email") // Clear specific user's cache after password reset
     public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
         userService.resetPassword(resetPasswordDTO);
         return ResponseEntity.ok("Password updated successfully");
     }
-    
- // Endpoint to upload profile picture
+
+    // Endpoint to upload profile picture
     @PostMapping("/{userId}/uploadProfilePicture")
+ //   @CacheEvict(value = "users", key = "#userId") // Clear cache after profile picture upload
     public ResponseEntity<String> uploadProfilePicture(
             @PathVariable Long userId,
             @RequestParam("profilePicture") MultipartFile profilePicture) {
@@ -78,6 +89,7 @@ public class UserController {
 
     // Endpoint to retrieve profile picture
     @GetMapping("/{userId}/profilePicture")
+ //   @Cacheable(value = "users", key = "#userId") // Cache profile picture retrieval by userId
     public ResponseEntity<byte[]> getProfilePicture(@PathVariable Long userId) {
         try {
             byte[] image = userService.getProfilePicture(userId);
@@ -93,7 +105,4 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-	
-	
 }

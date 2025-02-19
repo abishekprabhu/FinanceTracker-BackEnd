@@ -10,9 +10,9 @@ import com.abishek.financeapi.DTO.StatsDTO;
 
 public interface StatsService {
 	
-	GraphDTO getChartDataMonthly();
+	GraphDTO getChartDataMonthly(Long userId);
 	
-	StatsDTO getStats();
+//	StatsDTO getStats();
 
 	GraphDTO getChartDataWeekly();
 
@@ -22,9 +22,10 @@ public interface StatsService {
 
 	PdfDTO getTransactionDataMonthly();
 
+	StatsDTO getUserStats(Long userId);
 
 	PercentageDTO getTransactionSummary(Long userId);
 
-	MonthlyDataDTO getMonthlyData();
+	MonthlyDataDTO getMonthlyData(Long userId);
 		
 }
